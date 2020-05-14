@@ -11,7 +11,7 @@ from utils.logger import Logger
 
 class Pipeline(Logger):
     def __init__(self):
-        self.config_path = "./config/config.json.py"
+        self.config_path = "./config/config.json"
         self.input_path = "./data/traj.npy"
 
     def main(self):
