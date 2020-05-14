@@ -56,7 +56,8 @@ class Pipeline(Logger):
             test_loss.reset_states()
 
             for train_idx, train_x in enumerate(train_ds):
-                self.logger.info("Training at Epoch {} - Batch id {}".format(i + 1, train_idx + 1))
+                if train_idx % 1000 == 0:
+                    self.logger.info("Training at Epoch {} - Batch id {}".format(i + 1, train_idx + 1))
                 self.train(train_x, model=gmvae, optimizer=optimizer, loss=loss, loss_metric=train_loss)
 
             template = "Epoch {}, Loss: {}"

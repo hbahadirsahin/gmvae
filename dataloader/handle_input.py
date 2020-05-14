@@ -39,8 +39,8 @@ class InputHandler(Logger):
     def read_data(self):
         inp = np.load(self.input_path)
         inp = inp.astype(np.float32)
-        length = int(inp.shape[0] / 1000)
-        inp = inp[:length]
+        # length = int(inp.shape[0] / 1000)
+        # inp = inp[:length]
         self.initial_data_shape = inp.shape
         return inp
 
