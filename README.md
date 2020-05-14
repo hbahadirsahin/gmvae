@@ -5,7 +5,7 @@ This repository contains, hopefully, Tensorflow 2 version of Deep Unsupervised C
 - Initial commit may have bugs and stuff. 
 - It has been tested with given data (for interview). Note that dataset does not contain any labels in it. 
 - I will implement several updates to test this code on MNIST (as in original paper).
-- I wanted to define pipeline in a more fancier way but I got bored. That's why "utils" folder is pushed but most codes in it are not being used.
+- I wanted to define pipeline in a fancier way but I got bored. That's why "utils" folder is pushed but most codes in it are not being used.
 
 Referances:
 - https://github.com/RuiShu/vae-clustering
