@@ -1,4 +1,4 @@
-# DEEP UNSUPERVISED CLUSTERING WITH GAUSSIAN MIXTURE VARIATIONAL AUTOENCODERS
+# Deep Unsupervised Clustering with Gaussian Mixture Variational Autoencoders
 
 This repository contains, hopefully, Tensorflow 2 version of Deep Unsupervised Clustering with Gaussian Variatonal Autoencoders paper (https://arxiv.org/pdf/1611.02648.pdf) as an interview task.
 
