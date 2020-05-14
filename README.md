@@ -7,7 +7,7 @@ It has been tested with given data (for interview). Note that dataset does not c
 I will implement several updates to test this code on MNIST (as in original paper).
 
 Referances:
-https://github.com/RuiShu/vae-clustering
-https://github.com/jariasf/GMVAE/tree/master/tensorflow
+- https://github.com/RuiShu/vae-clustering \n
+- https://github.com/jariasf/GMVAE/tree/master/tensorflow
 
 
