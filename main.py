@@ -24,6 +24,7 @@ class Pipeline(Logger):
 
         self.logger.info("Reading input file and generating train/test splits!")
         input_handler = InputHandler(input_path=self.input_path,
+                                     use_mnist=input_config["use_mnist"],
                                      split_vali=input_config["split_vali"],
                                      batch_size=input_config["batch_size"],
                                      test_size=input_config["test_size"])
@@ -57,15 +58,21 @@ class Pipeline(Logger):
             test_loss.reset_states()
 
             for train_idx, train_x in enumerate(train_ds):
+                if input_config["use_mnist"]:
+                    self.train(train_x[0], model=gmvae, optimizer=optimizer, loss=loss, loss_metric=train_loss)
+                else:
+                    self.train(train_x, model=gmvae, optimizer=optimizer, loss=loss, loss_metric=train_loss)
                 if train_idx % 1000 == 0:
                     self.logger.info("Training at Epoch {} - Batch id {}".format(i + 1, train_idx + 1))
-                self.train(train_x, model=gmvae, optimizer=optimizer, loss=loss, loss_metric=train_loss)
 
             if input_config["split_vali"]:
                 for vali_idx, vali_x in enumerate(vali_ds):
+                    if input_config["use_mnist"]:
+                        self.evaluate(vali_x[0], model=gmvae, loss=loss, loss_metric=val_loss)
+                    else:
+                        self.evaluate(vali_x, model=gmvae, loss=loss, loss_metric=val_loss)
                     if vali_idx % 1000 == 0:
                         self.logger.info("Validation at Epoch {} - Batch id {}".format(i + 1, vali_idx + 1))
-                    self.evaluate(vali_x, model=gmvae, loss=loss, loss_metric=val_loss)
 
             template = "Epoch {}, Training Loss: {}, Validation Loss: {}"
             if input_config["split_vali"]:
@@ -74,7 +81,10 @@ class Pipeline(Logger):
                 self.logger.info(template.format(i+1, train_loss.result(), 0))
 
         for test_idx, test_x in enumerate(test_ds):
-            self.evaluate(test_x, model=gmvae, loss=loss, loss_metric=test_loss)
+            if input_config["use_mnist"]:
+                self.evaluate(test_x[0], model=gmvae, loss=loss, loss_metric=test_loss)
+            else:
+                self.evaluate(test_x, model=gmvae, loss=loss, loss_metric=test_loss)
         self.logger.info("Test Loss: {}".format(test_loss.result()))
 
     @tf.function
