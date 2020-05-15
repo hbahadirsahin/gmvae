@@ -24,10 +24,11 @@ class Pipeline(Logger):
 
         self.logger.info("Reading input file and generating train/test splits!")
         input_handler = InputHandler(input_path=self.input_path,
+                                     split_vali=input_config["split_vali"],
                                      batch_size=input_config["batch_size"],
                                      test_size=input_config["test_size"])
 
-        train_ds, test_ds, _ = input_handler.create_tf_dataset()
+        train_ds, test_ds, vali_ds = input_handler.create_tf_dataset()
         n_features = input_handler.initial_data_shape[1]
         self.logger.info("Dataset loaded!")
 
@@ -60,8 +61,17 @@ class Pipeline(Logger):
                     self.logger.info("Training at Epoch {} - Batch id {}".format(i + 1, train_idx + 1))
                 self.train(train_x, model=gmvae, optimizer=optimizer, loss=loss, loss_metric=train_loss)
 
-            template = "Epoch {}, Loss: {}"
-            self.logger.info(template.format(i+1, train_loss.result(), test_loss.result()))
+            if input_config["split_vali"]:
+                for vali_idx, vali_x in enumerate(vali_ds):
+                    if vali_idx % 1000 == 0:
+                        self.logger.info("Validation at Epoch {} - Batch id {}".format(i + 1, vali_idx + 1))
+                    self.evaluate(vali_x, model=gmvae, loss=loss, loss_metric=val_loss)
+
+            template = "Epoch {}, Training Loss: {}, Validation Loss: {}"
+            if input_config["split_vali"]:
+                self.logger.info(template.format(i+1, train_loss.result(), val_loss.result()))
+            else:
+                self.logger.info(template.format(i+1, train_loss.result(), 0))
 
         for test_idx, test_x in enumerate(test_ds):
             self.evaluate(test_x, model=gmvae, loss=loss, loss_metric=test_loss)
