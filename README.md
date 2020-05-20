@@ -3,7 +3,7 @@
 ## Update 20-05-2020
 
 - Accuracy metrics are added into code. It only uses accuracy metrics when a dataset has labels in it otherwise logs will print 0.
-- Eventually, I can add "[normalized mutual information](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.normalized_mutual_info_score.html#sklearn.metrics.normalized_mutual_info_score)" metric to determine clustering performance, too. But I don't give promises =) 
+- I want to add "[normalized mutual information](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.normalized_mutual_info_score.html#sklearn.metrics.normalized_mutual_info_score)" metric to determine clustering performance, too. But I don't give promises since I am still same lazy person that haven't commit any update to my NLP side project since months =) 
 - Changes from informal README to semi-formal README format =) But I still hate all versions of tensorflow =)
 
 ## Introduction
