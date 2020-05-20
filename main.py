@@ -52,14 +52,28 @@ class Pipeline(Logger):
         val_loss = tf.keras.metrics.Mean(name='val_loss')
         test_loss = tf.keras.metrics.Mean(name='test_loss')
 
+        train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
+        val_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
+        test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
+
         for i in range(training_config["max_iter"]):
             train_loss.reset_states()
             val_loss.reset_states()
             test_loss.reset_states()
 
+            train_accuracy.reset_states()
+            val_accuracy.reset_states()
+            test_accuracy.reset_states()
+
             for train_idx, train_x in enumerate(train_ds):
                 if input_config["use_mnist"]:
-                    self.train(train_x[0], model=gmvae, optimizer=optimizer, loss=loss, loss_metric=train_loss)
+                    self.train(train_x[0],
+                               model=gmvae,
+                               optimizer=optimizer,
+                               loss=loss,
+                               loss_metric=train_loss,
+                               labels=train_x[1],
+                               accuracy_metric=train_accuracy)
                 else:
                     self.train(train_x, model=gmvae, optimizer=optimizer, loss=loss, loss_metric=train_loss)
                 if train_idx % 1000 == 0:
@@ -68,39 +82,59 @@ class Pipeline(Logger):
             if input_config["split_vali"]:
                 for vali_idx, vali_x in enumerate(vali_ds):
                     if input_config["use_mnist"]:
-                        self.evaluate(vali_x[0], model=gmvae, loss=loss, loss_metric=val_loss)
+                        self.evaluate(vali_x[0],
+                                      model=gmvae,
+                                      loss=loss,
+                                      loss_metric=val_loss,
+                                      labels=vali_x[1],
+                                      accuracy_metric=val_accuracy)
                     else:
                         self.evaluate(vali_x, model=gmvae, loss=loss, loss_metric=val_loss)
                     if vali_idx % 1000 == 0:
                         self.logger.info("Validation at Epoch {} - Batch id {}".format(i + 1, vali_idx + 1))
 
-            template = "Epoch {}, Training Loss: {}, Validation Loss: {}"
+            template = "Epoch {}, Training Loss: {}, Validation Loss: {}, Train Accuracy: {}, Validation Accuracy: {}"
             if input_config["split_vali"]:
-                self.logger.info(template.format(i+1, train_loss.result(), val_loss.result()))
+                self.logger.info(template.format(i+1,
+                                                 train_loss.result(),
+                                                 val_loss.result(),
+                                                 train_accuracy.result(),
+                                                 val_accuracy.result()))
             else:
-                self.logger.info(template.format(i+1, train_loss.result(), 0))
+                self.logger.info(template.format(i+1, train_loss.result(), 0, train_accuracy.result(), 0))
 
         for test_idx, test_x in enumerate(test_ds):
             if input_config["use_mnist"]:
-                self.evaluate(test_x[0], model=gmvae, loss=loss, loss_metric=test_loss)
+                self.evaluate(test_x[0],
+                              model=gmvae,
+                              loss=loss,
+                              loss_metric=test_loss,
+                              labels=test_x[1],
+                              accuracy_metric=test_accuracy)
             else:
                 self.evaluate(test_x, model=gmvae, loss=loss, loss_metric=test_loss)
-        self.logger.info("Test Loss: {}".format(test_loss.result()))
+        self.logger.info("Test Loss: {}, Test Accuracy: {}".format(test_loss.result(), test_accuracy.result()))
 
     @tf.function
-    def train(self, train_data, model, optimizer, loss, loss_metric):
+    def train(self, train_data, model, optimizer, loss, loss_metric, labels=None, accuracy_metric=None):
         with tf.GradientTape() as tape:
             out_encoder, out_decoder = model(train_data, training=True)
             out_loss = loss.unlabeled_loss(train_data, out_encoder, out_decoder)
         gradients = tape.gradient(out_loss["total_loss"], model.trainable_variables)
         optimizer.apply_gradients(zip(gradients, model.trainable_variables))
         loss_metric(out_loss["total_loss"])
+        if accuracy_metric:
+            accuracy_metric(tf.reshape(labels, [labels.shape.as_list()[0], -1]),
+                            tf.reshape(labels, [out_loss["predicted"].shape.as_list()[0], -1]))
 
     @tf.function
-    def evaluate(self, eval_data, model, loss, loss_metric):
+    def evaluate(self, eval_data, model, loss, loss_metric, labels=None, accuracy_metric=None):
         out_encoder, out_decoder = model(eval_data, training=False)
         out_loss = loss.unlabeled_loss(eval_data, out_encoder, out_decoder)
         loss_metric(out_loss["total_loss"])
+        if accuracy_metric:
+            accuracy_metric(tf.reshape(labels, [labels.shape.as_list()[0], -1]),
+                            tf.reshape(labels, [out_loss["predicted"].shape.as_list()[0], -1]))
 
 
 if __name__ == '__main__':

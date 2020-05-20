@@ -18,9 +18,7 @@ class Loss:
         z_mean = encoder_out["mean"]
         z_variance = encoder_out["var"]
         encoder_logits = encoder_out["logits"]
-        y = encoder_out["y"]
         probs = encoder_out["probs"]
-        log_probs = encoder_out["log_probs"]
 
         output = decoder_out["out"]
         y_mean = decoder_out["y_mean"]
@@ -36,10 +34,13 @@ class Loss:
 
         total_loss = reconstruction_loss + gaussian_loss + categorical_loss
 
+        predicted = tf.argmax(encoder_logits, axis=1)
+
         return {"total_loss": total_loss,
                 "reconstruction_loss": reconstruction_loss,
                 "gaussian_loss": gaussian_loss,
-                "categorical_loss": categorical_loss}
+                "categorical_loss": categorical_loss,
+                "predicted": predicted}
 
     @staticmethod
     def labeled_loss(gaussian_sample, z_mean, z_variance, y_mean, y_variance):
